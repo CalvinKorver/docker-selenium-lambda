@@ -4,15 +4,16 @@ from selenium import webdriver
 from tempfile import mkdtemp
 from selenium.webdriver.common.by import By
 
-mac_osx_testing = False
+
 find_job_count = 2
 
 
 def handler(event=None, context=None):
     options = webdriver.ChromeOptions()
+    mac_osx_testing = False
     if mac_osx_testing:
         service = webdriver.ChromeService("chromedriver-mac-x64/chromedriver")
-        options.binary_location = '/Applications/chrome-mac/Chromium.app/Contents/MacOS/Chromium'
+        # options.binary_location = '/Applications/chrome-mac/Chromium.app/Contents/MacOS/Chromium'
     else:
         service = webdriver.ChromeService("/opt/chromedriver")
         options.binary_location = '/opt/chrome/chrome'
@@ -78,7 +79,7 @@ def handler(event=None, context=None):
 
     driver.quit()
 
-    return job_results
+    return len(job_results)
 
 
 def extract_text_by(method, driver, path):
