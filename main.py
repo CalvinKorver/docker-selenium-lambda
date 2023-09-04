@@ -1,28 +1,36 @@
+import time
+
 from selenium import webdriver
 from tempfile import mkdtemp
 from selenium.webdriver.common.by import By
 
+mac_osx_testing = False
+find_job_count = 2
+
 
 def handler(event=None, context=None):
     options = webdriver.ChromeOptions()
-    service = webdriver.ChromeService("/opt/chromedriver")
-
-    options.binary_location = '/opt/chrome/chrome'
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1280x1696")
-    options.add_argument("--single-process")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-dev-tools")
-    options.add_argument("--no-zygote")
-    options.add_argument(f"--user-data-dir={mkdtemp()}")
-    options.add_argument(f"--data-path={mkdtemp()}")
-    options.add_argument(f"--disk-cache-dir={mkdtemp()}")
-    options.add_argument("--remote-debugging-port=9222")
+    if mac_osx_testing:
+        service = webdriver.ChromeService("chromedriver-mac-x64/chromedriver")
+        options.binary_location = '/Applications/chrome-mac/Chromium.app/Contents/MacOS/Chromium'
+    else:
+        service = webdriver.ChromeService("/opt/chromedriver")
+        options.binary_location = '/opt/chrome/chrome'
+        options.add_argument('--headless')
+        options.add_argument("--disable-dev-shm-usage")  # overcome limited resource problems
+        options.add_argument("--no-sandbox")  # Bypass OS security model
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1280x1696")
+        options.add_argument("--single-process")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-dev-tools")
+        options.add_argument("--no-zygote")
+        options.add_argument(f"--user-data-dir={mkdtemp()}")
+        options.add_argument(f"--data-path={mkdtemp()}")
+        options.add_argument(f"--disk-cache-dir={mkdtemp()}")
+        options.add_argument("--remote-debugging-port=9222")
 
     driver = webdriver.Chrome(options=options, service=service)
-    # chrome.get("https://example.com/")
 
     base_url = 'https://www.google.com/search?ibp=htl%3Bjobs&q=teacher'
     driver.get(base_url)
@@ -31,7 +39,7 @@ def handler(event=None, context=None):
     count = 0
     job_results = []
     for job in job_elements:
-        if count >= 2:
+        if count > find_job_count:
             break
 
         job_description, job_info = [], []
@@ -69,7 +77,8 @@ def handler(event=None, context=None):
         count += 1
 
     driver.quit()
-    return len(job_results)
+
+    return job_results
 
 
 def extract_text_by(method, driver, path):
@@ -79,5 +88,9 @@ def extract_text_by(method, driver, path):
             return element.text
     return ""
 
-
-    # return chrome.find_element(by=By.XPATH, value="//html").text
+# For testing
+# def main():
+#     print(handler(None, None))
+#
+# if __name__ == "__main__":
+#     main()
